@@ -47,7 +47,7 @@ func gen(min, max float64, num int) <-chan float64 {
 }
 
 func drawImg(width, height int) {
-	out, err := os.Create("mandelbrot1.jpg")
+	out, err := os.Create("mandelbrot.jpg")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -70,12 +70,15 @@ func calcColor(n int) color.Color {
 }
 
 func main() {
-	var width, height = 1000, 1000
+	width, height := 1000, 1000
+	xMin, xMax := -2.0, 0.5
+	yMin, yMax := -1.25, 1.25
+
 	go drawImg(width, height)
-	var x, y int
-	for i := range gen(-2.0, 0.5, width) {
-		y = 0
-		for j := range gen(-1.25, 1.25, height) {
+	x := 0
+	for i := range gen(xMin, xMax, width) {
+		y := 0
+		for j := range gen(yMin, yMax, height) {
 			pointC <- point{x, y, mandelbrot(i, j)}
 			y++
 		}

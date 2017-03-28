@@ -49,7 +49,7 @@ func drawImg(img *image.RGBA, pointC chan point) {
 }
 
 func calcColor(n int) color.Color {
-    return color.RGBA{uint8((n + 50) % 256), uint8((n + 10) % 256), uint8(n % 256), 255}
+    return color.RGBA{uint8(n % 256), uint8((n + 50) % 256), uint8(n % 256), 255}
 }
 
 func main() {
@@ -60,8 +60,6 @@ func main() {
     }
 
     var width, height = 1000, 1000
-    imgRect := image.Rect(0, 0, width, height)
-    img := image.NewRGBA(imgRect)
     xMin, xMax := -2.0, 0.5
     yMin, yMax := -1.25, 1.25
     xNum, yNum := 3, 2
@@ -70,6 +68,9 @@ func main() {
     heightStep := height / yNum
     xStep := (xMax - xMin) / float64(xNum)
     yStep := (yMax - yMin) / float64(yNum)
+
+    imgRect := image.Rect(0, 0, width, height)
+    img := image.NewRGBA(imgRect)
 
     var wg sync.WaitGroup
     for xi := 0; xi < xNum; xi++ {
@@ -83,9 +84,20 @@ func main() {
             go func(xi, yi int, pointC chan point) {
                 defer wg.Done()
                 x := xi * widthStep
-                for i := range gen(xMin + float64(xi) * xStep, xMin + float64(xi + 1) * xStep, widthStep) {
+                var xx, yx float64
+                if xi == xNum -1 {
+                    xx = xMax
+                } else {
+                    xx = xMin + float64(xi + 1) * xStep
+                }
+                if yi == yNum - 1 {
+                    yx = yMax
+                } else {
+                    yx = yMin + float64(yi + 1) * yStep
+                }
+                for i := range gen(xMin + float64(xi) * xStep, xx, widthStep) {
                     y := yi * heightStep
-                    for j := range gen(yMin + float64(yi) * yStep, yMin + float64(yi + 1) * yStep, heightStep) {
+                    for j := range gen(yMin + float64(yi) * yStep, yx, heightStep) {
                         pointC <- point{x, y, mandelbrot(i, j)}
                         y++
                     }
